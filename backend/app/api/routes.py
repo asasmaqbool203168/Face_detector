@@ -10,10 +10,10 @@ import aiofiles
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import User
-from app.schemas import RecognitionResult, UserOut, UserRegisterResponse
-from app.face_service import extract_face_encoding, find_best_match, count_faces
+from app.db.database import get_db
+from app.db.models import User
+from app.schemas.schemas import RecognitionResult, UserOut, UserRegisterResponse
+from app.services.face_service import extract_face_encoding, find_best_match, count_faces
 
 router = APIRouter()
 

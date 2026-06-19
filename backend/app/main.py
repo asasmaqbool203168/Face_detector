@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from app.database import Base, engine
-from app.routes import router
+from app.db.database import Base, engine
+from app.api.routes import router
 
 # ── Create all DB tables on startup ──────────────────────────────────────────
 Base.metadata.create_all(bind=engine)
