@@ -27,9 +27,9 @@ def _load_rgb_array(image_bytes: bytes) -> np.ndarray:
     return np.array(pil_img)
 
 
-def extract_face_encoding(image_bytes: bytes) -> Optional[List[float]]:
+def extract_face_and_eyes(image_bytes: bytes) -> Optional[Tuple[List[float], dict]]:
     """
-    Return the 128-d face encoding for the **first** face found in the image.
+    Return the 128-d face encoding and eye landmarks for the **first** face found in the image.
     Returns None when no face is detected.
     """
     rgb = _load_rgb_array(image_bytes)
@@ -39,7 +39,17 @@ def extract_face_encoding(image_bytes: bytes) -> Optional[List[float]]:
     encodings = face_recognition.face_encodings(rgb, known_face_locations=locations)
     if not encodings:
         return None
-    return encodings[0].tolist()
+        
+    landmarks_list = face_recognition.face_landmarks(rgb, face_locations=locations)
+    eye_data = {}
+    if landmarks_list:
+        landmarks = landmarks_list[0]
+        eye_data = {
+            "left_eye": landmarks.get("left_eye", []),
+            "right_eye": landmarks.get("right_eye", [])
+        }
+        
+    return encodings[0].tolist(), eye_data
 
 
 def count_faces(image_bytes: bytes) -> int:

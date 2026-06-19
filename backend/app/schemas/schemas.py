@@ -10,6 +10,7 @@ class UserRegisterResponse(BaseModel):
     email: Optional[str] = None
     created_at: datetime
     message: str
+    eye_data: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -22,6 +23,7 @@ class RecognitionResult(BaseModel):
     user_id: Optional[int] = None
     confidence: Optional[float] = None
     message: str
+    eye_data: Optional[dict] = None
 
 
 # ── User list ─────────────────────────────────────────────────────────────────

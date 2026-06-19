@@ -10,6 +10,7 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(200), unique=True, nullable=True)
     face_encoding = Column(Text, nullable=False)          # JSON-serialised float list
+    eye_data = Column(Text, nullable=True)                # JSON-serialised eye coordinates
     image_path = Column(String(500), nullable=True)       # optional stored image path
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(

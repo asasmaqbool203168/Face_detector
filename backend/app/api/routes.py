@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.models import User
 from app.schemas.schemas import RecognitionResult, UserOut, UserRegisterResponse
-from app.services.face_service import extract_face_encoding, find_best_match, count_faces
+from app.services.face_service import extract_face_and_eyes, find_best_match, count_faces
 
 router = APIRouter()
 
@@ -54,13 +54,14 @@ async def register_user(
             detail=f"Unsupported file type: {image.content_type}. Use JPEG or PNG.",
         )
 
-    # 3. Extract face encoding
-    encoding = extract_face_encoding(image_bytes)
-    if encoding is None:
+    # 3. Extract face encoding and eye data
+    extraction_result = extract_face_and_eyes(image_bytes)
+    if extraction_result is None:
         raise HTTPException(
             status_code=422,
             detail="No face detected in the provided image. Please upload a clear face photo.",
         )
+    encoding, eye_data = extraction_result
 
     # 3.5 Check if face already registered
     all_users = db.query(User).all()
@@ -88,6 +89,7 @@ async def register_user(
         name=name.strip(),
         email=email.strip() if email else None,
         face_encoding=json.dumps(encoding),
+        eye_data=json.dumps(eye_data),
         image_path=None,
     )
     db.add(user)
@@ -100,6 +102,7 @@ async def register_user(
         email=user.email,
         created_at=user.created_at,
         message=f"User '{user.name}' registered successfully!",
+        eye_data=eye_data,
     )
 
 
@@ -125,13 +128,14 @@ async def recognize_face(
             detail="No face detected in the image. Please provide a clear face photo.",
         )
 
-    # 3. Extract encoding of first face
-    encoding = extract_face_encoding(image_bytes)
-    if encoding is None:
+    # 3. Extract encoding of first face and eye data
+    extraction_result = extract_face_and_eyes(image_bytes)
+    if extraction_result is None:
         raise HTTPException(
             status_code=422,
             detail="Could not extract face features. Try a better-lit, front-facing photo.",
         )
+    encoding, eye_data = extraction_result
 
     # 4. Load all registered users
     all_users = db.query(User).all()
@@ -152,6 +156,7 @@ async def recognize_face(
             user_id=matched_user.id,
             confidence=confidence,
             message=f"Welcome, {matched_user.name}! (Confidence: {confidence}%)",
+            eye_data=eye_data,
         )
 
     return RecognitionResult(
